@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/security
+       http://www.springframework.org/schema/security/spring-security.xsd
+">
+
+    <security:http pattern="/login.jsp" security="none"/>
+    <security:http pattern="/error.jsp" security="none"/>
+    <!--
+        配置拦截的规则
+        auto-config="使用SpringSecurity自带的页面"
+        use-expressions="是否使用spel表达式"，如果使用表达式：hasRole('ROLE_USER')
+    -->
+    <security:http auto-config="true" use-expressions="false">
+        <!-- 配置拦截的请求地址，任何请求地址都必须有ROLE_USER的权限 -->
+        <security:intercept-url pattern="/**" access="ROLE_USER"/>
+
+        <!--自定义登录及跳转页面
+            security:form-login:配置自定义登录页及跳转相关
+            login-page：配置自定义登录页面
+            login-processing-url:后台处理登录请求的处理器 /login安全框架自带
+            default-target-url:登录成功之后默认跳转的目标页面，前提是没有期望的资源（比如要访问某个url，URL1，
+            那么因为没有登录被拦截到了登录页，那么登录之后就直接跳转到URL1，而不是我们设置的default-target-url）
+            authentication-failure-url：登录失败跳转
+            username-parameter:实际登录页用户名的参数名称
+            password-parameter:实际登录页密码的参数名称
+        -->
+        <security:form-login
+        login-page="/login.jsp"
+        login-processing-url="/login"
+        default-target-url="/success.jsp"
+        authentication-failure-url="/error.jsp"
+        username-parameter="username"
+        password-parameter="password"
+        />
+        <security:csrf disabled="true"/>
+    </security:http>
+
+    <!-- 配置认证信息 -->
+    <security:authentication-manager>
+        <security:authentication-provider>
+            <security:user-service>
+                <!--noop是一个标识，表示密码不能明文，密码往往会有很多其他方式，这里默认编码就是不编码-->
+                <security:user name="admin" password="{noop}admin" authorities="ROLE_USER"/>
+            </security:user-service>
+        </security:authentication-provider>
+    </security:authentication-manager>
+</beans>
